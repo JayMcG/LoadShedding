@@ -1,5 +1,6 @@
 from logging import raiseExceptions
 from sys import argv
+from bs4 import BeautifulSoup
 import requests
 import json
 
@@ -51,6 +52,7 @@ def get_status(status_api):
 # Check the municipality
 def get_municipality():
     cities = []
+    print()
     print("Let's check which Province you fall under, please select from one of the following:")
     
     # Identify the user's province
@@ -108,13 +110,13 @@ def get_schedule(suburb_id, stage, province_id, municipality_total):
     print("Let's get that schedule using the following url:")
     print(schedule_api + str(suburb_id) + "/" + str(stage) + "/" + str(province_id) + "/" + str(municipality_total))
     print()
-    try:
-        response = requests.get(schedule_api + str(suburb_id) + "/" + str(stage) + "/" + str(province_id) + "/" + str(municipality_total))
-        response_result = response.text
-        search_result = json.JSONDecoder().decode(response_result)  
-        print(search_result)
-    except:
-        print("Unfortunately, no data was returned")
+    
+    url = schedule_api + str(suburb_id) + "/" + str(stage) + "/" + str(province_id) + "/" + str(municipality_total)
+    html_text = requests.get(url).text
+    soup = BeautifulSoup(html_text, 'html.parser')
+    for link in soup.find_all('a'):
+        print(link.get('href'))  
+        
 
 # Start search
 def start_search():
