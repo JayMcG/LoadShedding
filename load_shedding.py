@@ -67,13 +67,15 @@ def get_municipality():
     response = requests.get(province_api + str(province_id))
     response_result = response.text
     search_result = json.JSONDecoder().decode(response_result)
-    print("Here are the Municipalities I found:")
+    print("Here are the Municipalities I found under {province}:".format(province=provinces[int(province_id)]))
     for result in search_result:
         print("{number}: {name}".format(number= search_result.index(result), name= result["Text"]))
         cities.append(result["Value"])
     answer = input("Enter the corresponding number for your selection (e.g: 1): ")
-    print("You entered: {}".format(search_result[int(answer)]["Text"]))
+    print()
+    print("Thank you, searching for {}".format(search_result[int(answer)]["Text"]))
     city_id = cities[int(answer)]
+    print("Data returned: ", province_id, city_id)
     return province_id, city_id
   
 
@@ -99,13 +101,14 @@ def get_suburb(city_id):
 
     get_city = input("Kindly confirm your suburb from the results above: ")
     suburb_id = cities[int(get_city)]
+    print("Data returned: ", suburb_id)
     return suburb_id
 
 
 # Get the schedule
 def get_schedule(suburb_id, stage, province_id, municipality_total):
     print()
-    print("This is the information I have from you:\nSuburb_id = {mun} \nStage = {stage} \nCity_id = {cit} \nProvince_id = {prov_id} \nTotal = {tot}".format(stage=stage, mun=municipality[0], cit=municipality[1], prov_id=suburb_id[0], tot=suburb_id[2]))
+    print("This is the information I have from you:\nSuburb_id = {sub} \nStage = {stage} \nProvince_id = {prov_id} \nTotal = {tot}".format(sub=suburb_id, stage=stage, prov_id=municipality[0], tot=suburb_id[2]))
     print()
     print("Let's get that schedule using the following url:")
     print(schedule_api + str(suburb_id) + "/" + str(stage) + "/" + str(province_id) + "/" + str(municipality_total))
@@ -132,13 +135,14 @@ def start_search():
 # Execute program
 stage = start_search()
 if stage == 1:
+    print()
     answer = input("Do you still want to check the schedule? (Yes to continue): ")
     if answer.lower().strip() == "yes":
         municipality = get_municipality()
         suburb_id = get_suburb(municipality[1])
-        get_schedule(municipality[1], stage, suburb_id[0], suburb_id[2])
+        get_schedule(suburb_id[0], stage, municipality[0], suburb_id[2])
     else:
         print("Goodbye")
 else:
     municipality = get_municipality()
-    get_schedule(municipality[1], stage, suburb_id[0], suburb_id[2])
+    get_schedule(suburb_id[0], stage, municipality[0], suburb_id[2])
