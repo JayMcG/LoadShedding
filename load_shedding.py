@@ -1,5 +1,3 @@
-from logging import raiseExceptions
-from sys import argv
 from bs4 import BeautifulSoup
 import requests
 import json
