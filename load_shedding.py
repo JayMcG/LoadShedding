@@ -37,6 +37,9 @@ provinces = {
     9: "Western Cape",
     }
 
+# Final results from the search
+results = {}
+
 
 # Get the status of load shedding and return "stage"
 def get_status(status_api):
@@ -86,7 +89,6 @@ def get_municipality():
     
     city_id = cities[int(answer)]
     
-    print("Data returned: ", province_id, city_id)
     return province_id, city_id
   
 
@@ -113,7 +115,6 @@ def get_suburb(city_id):
     get_city = input("Kindly confirm your suburb from the results above: ")
     suburb_id = cities[int(get_city)]
     
-    print("Data returned: ", suburb_id)
     return suburb_id
 
 
@@ -131,8 +132,12 @@ def get_schedule(suburb_id, stage, province_id, municipality_total):
     soup = BeautifulSoup(html_text, 'html.parser')
 
     for item in soup.findAll("div", class_= "scheduleDay"):
-        print(item.text)
-   
+        days = item.text.strip()
+        times = []
+        for time in item("a"):
+            times.append(time.text.strip())
+        results[days[:7]] = times
+
 
 # Start search
 def start_search():
@@ -145,7 +150,7 @@ def start_search():
         start_search()
 
 
-#Execute program
+# Execute program
 def execute():
     stage = start_search()
     if stage == 1:
@@ -161,4 +166,10 @@ def execute():
         municipality = get_municipality()
         get_schedule(suburb_id[0], stage, municipality[0], suburb_id[2])
 
+
 execute()
+for result in results.items():
+    if result[1] == []:
+        print("{result}: None".format(result=result[0]))
+    else:
+        print("{result}: {times}".format(result=result[0], times=result[1]))
