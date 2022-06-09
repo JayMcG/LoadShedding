@@ -5,10 +5,11 @@ import requests
 import json
 
 # APIs
-status_api = "https://loadshedding.eskom.co.za/LoadShedding/GetStatus/"
-province_api = "https://loadshedding.eskom.co.za/LoadShedding/GetMunicipalities/?Id="
-suburb_api = "http://loadshedding.eskom.co.za/LoadShedding/GetSurburbData/?pageSize={size}&pageNum={pg_no}&id={id}"
-schedule_api = "http://loadshedding.eskom.co.za/LoadShedding/GetScheduleM/"
+base_api = "https://loadshedding.eskom.co.za/LoadShedding/"
+status_api = base_api + "GetStatus/"
+province_api = base_api + "GetMunicipalities/?Id="
+suburb_api = base_api + "GetSurburbData/?pageSize={size}&pageNum={pg_no}&id={id}"
+schedule_api = base_api + "GetScheduleM/"
 
 # Load shedding stages
 stages = {
@@ -38,12 +39,13 @@ provinces = {
 def get_status(status_api):
     print("Let's check the current load shedding status")
     print("Searching now...")
+
     response = requests.get(status_api)
     if response.status_code == 200:
         response_result = response.text
         search_result = json.JSONDecoder().decode(response_result)
         stage = search_result
-        print("The current status is: {}".format(stages[search_result]))
+        print("The current status is: \"{}\"".format(stages[search_result]))
         return stage
     else:
         print("Error, status code: ", response.status_code)
@@ -51,7 +53,6 @@ def get_status(status_api):
 
 # Check the municipality
 def get_municipality():
-    cities = []
     print()
     print("Let's check which Province you fall under, please select from one of the following:")
     
@@ -60,28 +61,35 @@ def get_municipality():
         print("{number}: {name}".format(number= province[0], name= province[1]))
     province_id = input("Enter the corresponding number for your selection (e.g: 1): ")
 
-    # Identify the user's suburb
     print()
     print("Thank you, searching for {province}...".format(province=provinces[int(province_id)]))
     print()
+
+    # Identify the user's suburb
     response = requests.get(province_api + str(province_id))
     response_result = response.text
     search_result = json.JSONDecoder().decode(response_result)
+    
     print("Here are the Municipalities I found under {province}:".format(province=provinces[int(province_id)]))
+    
+    cities = []
     for result in search_result:
         print("{number}: {name}".format(number= search_result.index(result), name= result["Text"]))
         cities.append(result["Value"])
     answer = input("Enter the corresponding number for your selection (e.g: 1): ")
+    
     print()
     print("Thank you, searching for {}".format(search_result[int(answer)]["Text"]))
+    
     city_id = cities[int(answer)]
+    
     print("Data returned: ", province_id, city_id)
     return province_id, city_id
   
 
 # Find the suburb
 def get_suburb(city_id):
-    size = 10000 # Not sure of size limit
+    size = 10000 # Not sure of size limit but value executes
     pg_no = 1
     cities = []
     
@@ -101,6 +109,7 @@ def get_suburb(city_id):
 
     get_city = input("Kindly confirm your suburb from the results above: ")
     suburb_id = cities[int(get_city)]
+    
     print("Data returned: ", suburb_id)
     return suburb_id
 
@@ -108,15 +117,15 @@ def get_suburb(city_id):
 # Get the schedule
 def get_schedule(suburb_id, stage, province_id, municipality_total):
     print()
-    print("This is the information I have from you:\nSuburb_id = {sub} \nStage = {stage} \nProvince_id = {prov_id} \nTotal = {tot}".format(sub=suburb_id, stage=stage, prov_id=municipality[0], tot=suburb_id[2]))
-    print()
     print("Let's get that schedule using the following url:")
     print(schedule_api + str(suburb_id) + "/" + str(stage) + "/" + str(province_id) + "/" + str(municipality_total))
     print()
-    
+    print("Ok, this is what I found:")
+    print()
     url = schedule_api + str(suburb_id) + "/" + str(stage) + "/" + str(province_id) + "/" + str(municipality_total)
     html_text = requests.get(url).text
     soup = BeautifulSoup(html_text, 'html.parser')
+    
     for link in soup.find_all('a'):
         print(link.get('href'))  
         
