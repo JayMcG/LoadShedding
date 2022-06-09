@@ -121,9 +121,6 @@ def get_schedule(suburb_id, stage, province_id, municipality_total):
     print()
     print("Let's get that schedule using the following url:")
     print(schedule_api + str(suburb_id) + "/" + str(stage) + "/" + str(province_id) + "/" + str(municipality_total))
-    print()
-    print("Ok, this is what I found:")
-    print()
 
     url = schedule_api + str(suburb_id) + "/" + str(stage) + "/" + str(province_id) + "/" + str(municipality_total)
     html_text = requests.get(url).text
@@ -164,10 +161,18 @@ def execute():
         municipality = get_municipality()
         get_schedule(suburb_id[0], stage, municipality[0], suburb_id[2])
 
+    if results == {}:
+        print()
+        print("Sorry, but it doesn't look like there are any results for your area.")
+    else:
+        print()
+        print("Ok, this is what I found:")
+    
+    for result in results.items():
+        if result[1] == []:
+            print("{result}: None".format(result=result[0]))
+        else:
+            print("{result}: {times}".format(result=result[0], times=result[1]))
+
 
 execute()
-for result in results.items():
-    if result[1] == []:
-        print("{result}: None".format(result=result[0]))
-    else:
-        print("{result}: {times}".format(result=result[0], times=result[1]))
