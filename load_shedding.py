@@ -17,7 +17,11 @@ stages = {
     2: "Stage 1", 
     3: "Stage 2", 
     4: "Stage 3", 
-    5: "Stage 4"
+    5: "Stage 4",
+    6: "Stage 5",
+    7: "Stage 6",
+    8: "Stage 7",
+    9: "Stage 8"
     }
 
 # Predefined provinces
@@ -32,7 +36,6 @@ provinces = {
     8: "Northern Cape",
     9: "Western Cape",
     }
-
 
 
 # Get the status of load shedding and return "stage"
@@ -122,13 +125,14 @@ def get_schedule(suburb_id, stage, province_id, municipality_total):
     print()
     print("Ok, this is what I found:")
     print()
+
     url = schedule_api + str(suburb_id) + "/" + str(stage) + "/" + str(province_id) + "/" + str(municipality_total)
     html_text = requests.get(url).text
     soup = BeautifulSoup(html_text, 'html.parser')
-    
-    for link in soup.find_all('a'):
-        print(link.get('href'))  
-        
+
+    for item in soup.findAll("div", class_= "scheduleDay"):
+        print(item.text)
+   
 
 # Start search
 def start_search():
@@ -141,17 +145,20 @@ def start_search():
         start_search()
 
 
-# Execute program
-stage = start_search()
-if stage == 1:
-    print()
-    answer = input("Do you still want to check the schedule? (Yes to continue): ")
-    if answer.lower().strip() == "yes":
-        municipality = get_municipality()
-        suburb_id = get_suburb(municipality[1])
-        get_schedule(suburb_id[0], stage, municipality[0], suburb_id[2])
+#Execute program
+def execute():
+    stage = start_search()
+    if stage == 1:
+        print()
+        answer = input("Do you still want to check the schedule? (Yes to continue): ")
+        if answer.lower().strip() == "yes":
+            municipality = get_municipality()
+            suburb_id = get_suburb(municipality[1])
+            get_schedule(suburb_id[0], stage, municipality[0], suburb_id[2])
+        else:
+            print("Goodbye")
     else:
-        print("Goodbye")
-else:
-    municipality = get_municipality()
-    get_schedule(suburb_id[0], stage, municipality[0], suburb_id[2])
+        municipality = get_municipality()
+        get_schedule(suburb_id[0], stage, municipality[0], suburb_id[2])
+
+execute()
