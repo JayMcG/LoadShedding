@@ -2,12 +2,12 @@ from bs4 import BeautifulSoup
 import requests
 import json
 
-# APIs
-base_api = "https://loadshedding.eskom.co.za/LoadShedding/"
-status_api = base_api + "GetStatus/"
-province_api = base_api + "GetMunicipalities/?Id="
-suburb_api = base_api + "GetSurburbData/?pageSize={size}&pageNum={pg_no}&id={id}"
-schedule_api = base_api + "GetScheduleM/"
+# URLs
+base_url = "https://loadshedding.eskom.co.za/LoadShedding/"
+status_url = base_url + "GetStatus/"
+province_url = base_url + "GetMunicipalities/?Id="
+suburb_url = base_url + "GetSurburbData/?pageSize={size}&pageNum={pg_no}&id={id}"
+schedule_url = base_url + "GetScheduleM/"
 
 # Load shedding stages
 stages = {
@@ -40,11 +40,11 @@ results = {}
 
 
 # Get the status of load shedding and return "stage"
-def get_status(status_api):
+def get_status(status_url):
     print("Let's check the current load shedding status")
     print("Searching now...")
 
-    response = requests.get(status_api)
+    response = requests.get(status_url)
     if response.status_code == 200:
         response_result = response.text
         search_result = json.JSONDecoder().decode(response_result)
@@ -70,7 +70,7 @@ def get_municipality():
     print()
 
     # Identify the user's suburb
-    response = requests.get(province_api + str(province_id))
+    response = requests.get(province_url + str(province_id))
     response_result = response.text
     search_result = json.JSONDecoder().decode(response_result)
     
@@ -92,17 +92,17 @@ def get_municipality():
 
 # Find the suburb
 def get_suburb(city_id):
-    size = 10000 # Not sure of size limit but value executes
+    size = 10000 # No size limit in documentation, value works
     pg_no = 1
-    cities = []
     
-    response = requests.get(suburb_api.format(size=str(size), pg_no=str(pg_no), id=str(city_id)))
+    response = requests.get(suburb_url.format(size=str(size), pg_no=str(pg_no), id=str(city_id)))
     response_result = response.text
     search_result = json.JSONDecoder().decode(response_result)
     print()
     answer = input("Kindly provide the first 3 letters of your Suburb: ")
     print("Here are the results I found: ")
     
+    cities = []
     for result in search_result["Results"]:
         if result["Tot"] >= 0 and answer.lower().strip() in result["text"].lower():
             cities.append([result["id"], result["text"], result["Tot"]])
@@ -120,9 +120,9 @@ def get_suburb(city_id):
 def get_schedule(suburb_id, stage, province_id, municipality_total):
     print()
     print("Let's get that schedule using the following url:")
-    print(schedule_api + str(suburb_id) + "/" + str(stage) + "/" + str(province_id) + "/" + str(municipality_total))
+    print(schedule_url+ str(suburb_id) + "/" + str(stage) + "/" + str(province_id) + "/" + str(municipality_total))
 
-    url = schedule_api + str(suburb_id) + "/" + str(stage) + "/" + str(province_id) + "/" + str(municipality_total)
+    url = schedule_url + str(suburb_id) + "/" + str(stage) + "/" + str(province_id) + "/" + str(municipality_total)
     html_text = requests.get(url).text
     soup = BeautifulSoup(html_text, 'html.parser')
 
@@ -138,7 +138,7 @@ def get_schedule(suburb_id, stage, province_id, municipality_total):
 def start_search():
     answer = input("Hello, do you want to check for load shedding?: (Yes to continue) ")
     if answer.lower().strip() == "yes":
-        status = get_status(status_api)
+        status = get_status(status_url)
         return status
     else:
         print("Sorry, no valid input")
