@@ -159,6 +159,7 @@ def execute():
             print("Goodbye")
     else:
         municipality = get_municipality()
+        suburb_id = get_suburb(municipality[1])
         get_schedule(suburb_id[0], stage, municipality[0], suburb_id[2])
 
     if results == {}:
